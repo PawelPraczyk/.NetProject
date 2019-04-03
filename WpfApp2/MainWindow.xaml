@@ -25,14 +25,14 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <StackPanel Grid.Column="1" Margin="23.8,20,19.6,20" Orientation="Vertical">
+        <StackPanel Grid.Column="1" Margin="24,0,20,20" Orientation="Vertical" Height="379" VerticalAlignment="Bottom">
             <TextBlock TextWrapping="Wrap" Text="Name"/>
             <TextBox Name ="nameTextBox" Height="23" TextWrapping="Wrap" Text="Jarosław" Margin="0,0,0,10"/>
             <TextBlock TextWrapping="Wrap" Text="Age"/>
             <TextBox Name="ageTextBox" Height="23" TextWrapping="Wrap" Text="99"  Margin="0,0,0,10"/>
             <Button Name="loadPictureButton" Content="Load picture" Click="AddPictureButton_Click" Margin="0,0,0,10"/>
             <Button Name = "addNewPersonButton" Content="Add new person" Click="AddNewPersonButton_Click" Margin="0,0,0,10"/>
-            <TextBlock Name ="ProgressTextBlock" TextWrapping="Wrap" Margin="0,0,-0.8,10" Text=""/>
+            <ProgressBar Height="10" Margin="10,5,9.8,5" Maximum="100" Minimum="0" x:Name ="progressBar"/>
             <Button Name="addTextFromWeb" Content="Load text" Click="AddTextButton_Click"/>
         </StackPanel>
         <Image Name="myImage" HorizontalAlignment="Left" Height="120" Margin="102.8,262,0,0" VerticalAlignment="Top" Width="157" RenderTransformOrigin="1.025,0.471" Grid.Column="1"/>

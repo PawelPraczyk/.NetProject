@@ -37,6 +37,8 @@ namespace Lab01
             get => people;
         }
 
+        public object ProgresChanged { get; private set; }
+
         public MainWindow()
         {
             InitializeComponent();
@@ -96,14 +98,22 @@ namespace Lab01
 
         private async void AddTextButton_Click(object sender, RoutedEventArgs e)
         {
-                PersonalInfo personal = await GetApiAsync("https://uinames.com/api/?ext");
+            Progress<int> progress = new Progress<int>();
+            progress.ProgressChanged += ReportProgress;
+            PersonalInfo personal = await GetApiAsync("https://uinames.com/api/?ext",progress);
         }
 
-        async Task<PersonalInfo> GetApiAsync(string path)
+        async Task<PersonalInfo> GetApiAsync(string path, IProgress<int> progress)
         {
+            int report = new int();
             PersonalInfo personal = null;
-            while(true)
+            int levelmax = 10;
+            int presentLevel = 0;
+            while(presentLevel<=10)
             {
+                presentLevel++;
+                report = (presentLevel * 100) / levelmax;
+                progress.Report(report);
                 using (HttpClient client = new HttpClient())
                 {
 
@@ -114,23 +124,30 @@ namespace Lab01
                             var stringContent = await content.ReadAsStringAsync();
                             personal = JsonConvert.DeserializeObject<PersonalInfo>(stringContent);
                             
-                            
-                            
+                                                        
                             people.Add(new Person { Age = personal.age, Name = personal.name, Filename = personal.photo });
                         }
-
                     }
-
                 }
-                await Task.Delay(1000);
-                
-                
+                await Task.Delay(1000);               
             }
 
             return personal;
 
-
         }
+
+        private void ReportProgress(object sender, int e)
+        {
+            try
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    progressBar.Value = e;
+                });
+            }
+            catch { }
+        }
+
         public class PersonalInfo
         {
             public string name { get; set; }
