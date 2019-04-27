@@ -8,8 +8,11 @@
         Title="MainWindow" Height="450" Width="800">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="419*"/>
-            <ColumnDefinition Width="374*"/>
+            <ColumnDefinition Width="30*"/>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="20*"/>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="20*"/>
         </Grid.ColumnDefinitions>
         <ListBox Margin="20,20,10.2,20" ItemsSource="{Binding Items}" SelectionChanged="ListBox_SelectionChanged">
             <ListBox.ItemTemplate>
@@ -25,7 +28,7 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
-        <StackPanel Grid.Column="1" Margin="24,0,20,20" Orientation="Vertical" Height="379" VerticalAlignment="Bottom">
+        <StackPanel Grid.Column="2" Margin="20" Orientation="Vertical">
             <TextBlock TextWrapping="Wrap" Text="Name"/>
             <TextBox Name ="nameTextBox" Height="23" TextWrapping="Wrap" Text="Jarosław" Margin="0,0,0,10"/>
             <TextBlock TextWrapping="Wrap" Text="Age"/>
@@ -34,7 +37,29 @@
             <Button Name = "addNewPersonButton" Content="Add new person" Click="AddNewPersonButton_Click" Margin="0,0,0,10"/>
             <ProgressBar Height="10" Margin="10,5,9.8,5" Maximum="100" Minimum="0" x:Name ="progressBar"/>
             <Button Name="addTextFromWeb" Content="Load text" Click="AddTextButton_Click"/>
+            <TextBlock x:Name="progressTextBlock" TextWrapping="Wrap" Text=""/>
+            <TextBlock x:Name="progressTextBlock2" TextWrapping="Wrap" Text=""/>
+            <Button x:Name="weatherDataButton" Content="Load the weather data from the known locations" Click="LoadWeatherData"/>
+            <ProgressBar x:Name="weatherDataProgressBar" Height="20"/>
+            <TextBlock x:Name="weatherDataTextBlock" />
+            <Button Content="CANCEL" Click="Button_Click_1"/>
         </StackPanel>
-        <Image Name="myImage" HorizontalAlignment="Left" Height="120" Margin="102.8,262,0,0" VerticalAlignment="Top" Width="157" RenderTransformOrigin="1.025,0.471" Grid.Column="1"/>
+        <Grid x:Name="grid1" VerticalAlignment="Top" Margin="10,20,0,0" HorizontalAlignment="Left" Grid.Column="4" Width="235">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="22"/>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Label VerticalAlignment="Center" Grid.Row="0" Margin="3,3,0,3" HorizontalAlignment="Left" Grid.Column="0" Content="City:" Grid.RowSpan="2"/>
+            <TextBox x:Name="cityTextBox" Width="120" VerticalAlignment="Center"  Grid.Row="0" Margin="3,4,0,4" Height="24" HorizontalAlignment="Left" Grid.Column="1" Grid.RowSpan="2"/>
+
+        </Grid>
+        <Button Content="Button" Grid.Column="4" HorizontalAlignment="Left" Margin="73,73,0,0" VerticalAlignment="Top" Width="75" Click="LoadCityTemp_Click" RenderTransformOrigin="0.413,-2.975" Height="25"/>
+        <Image Name="myImage" HorizontalAlignment="Left" Height="120" Margin="102.8,262,0,0" VerticalAlignment="Top" Width="157" RenderTransformOrigin="1.025,0.471" Grid.Column="3"/>
     </Grid>
 </Window>

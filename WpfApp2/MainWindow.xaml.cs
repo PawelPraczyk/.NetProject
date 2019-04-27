@@ -3,6 +3,8 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -18,6 +20,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using WpfApp2;
 
 namespace Lab01
 {
@@ -27,6 +30,7 @@ namespace Lab01
     /// </summary>
     public partial class MainWindow : Window
     {
+        BackgroundWorker worker = new BackgroundWorker();
 
         string filename;
         ObservableCollection<Person> people = new ObservableCollection<Person>();
@@ -43,6 +47,16 @@ namespace Lab01
         {
             InitializeComponent();
             DataContext = this;
+
+            worker.WorkerReportsProgress = true;
+            worker.WorkerSupportsCancellation = true;
+            worker.DoWork += Worker_DoWork;
+            worker.ProgressChanged += Worker_ProgressChanged;
+        }
+
+        public void AddPerson(Person person)
+        {
+            Application.Current.Dispatcher.Invoke(() => { Items.Add(person); });
         }
 
         private void AddNewPersonButton_Click(object sender, RoutedEventArgs e)
@@ -100,7 +114,7 @@ namespace Lab01
         {
             Progress<int> progress = new Progress<int>();
             progress.ProgressChanged += ReportProgress;
-            PersonalInfo personal = await GetApiAsync("https://uinames.com/api/?ext",progress);
+            PersonalInfo personal = await GetApiAsync("https://uinames.com/api/?ext", progress);
         }
 
         async Task<PersonalInfo> GetApiAsync(string path, IProgress<int> progress)
@@ -146,6 +160,97 @@ namespace Lab01
                 });
             }
             catch { }
+        }
+
+        private void Worker_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            weatherDataProgressBar.Value = e.ProgressPercentage;
+            weatherDataTextBlock.Text = e.UserState as string;
+        }
+
+        private async void LoadWeatherData(object sender, RoutedEventArgs e)
+        {
+            string responseXML = await WeatherConnection.LoadDataAsync("London");
+            WeatherDataEntry result;
+
+            using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(responseXML)))
+            {
+                result = ParseWeather_LINQ.Parse(stream);
+                Items.Add(new Person()
+                {
+                    Name = result.City,
+                    Age = (int)Math.Round(result.Temperature)
+                });
+            }
+
+            if (worker.IsBusy != true)
+                worker.RunWorkerAsync();
+        }
+
+        private void Worker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            BackgroundWorker worker = sender as BackgroundWorker;
+
+            List<string> cities = new List<string> {
+                "London", "Warsaw", "Paris", "London", "Warsaw" };
+            for (int i = 1; i <= cities.Count; i++)
+            {
+                string city = cities[i - 1];
+
+                if (worker.CancellationPending == true)
+                {
+                    worker.ReportProgress(0, "Cancelled");
+                    e.Cancel = true;
+                    return;
+                }
+                else
+                {
+                    worker.ReportProgress(
+                        (int)Math.Round((float)i * 100.0 / (float)cities.Count),
+                        "Loading " + city + "...");
+                    string responseXML = WeatherConnection.LoadDataAsync(city).Result;
+                    WeatherDataEntry result;
+
+                    using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(responseXML)))
+                    {
+                        result = ParseWeather_XmlReader.Parse(stream);
+                        AddPerson(
+                            new Person()
+                            {
+                                Name = result.City,
+                                Age = (int)Math.Round(result.Temperature)
+                            });
+                    }
+                    Thread.Sleep(2000);
+                }
+            }
+            worker.ReportProgress(100, "Done");
+        }
+
+        private async void LoadCityTemp_Click(object sender, RoutedEventArgs e)
+        {
+            string city = cityTextBox.Text;
+            string responseXML = await WeatherConnection.LoadDataAsync(city);
+            WeatherDataEntry result;
+
+            using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(responseXML)))
+            {
+                result = ParseWeather_LINQ.Parse(stream);
+                Items.Add(new Person()
+                {
+                    Name = result.City,
+                    Age = (int)Math.Round(result.Temperature)
+                });
+            }
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            if (worker.WorkerSupportsCancellation == true)
+            {
+                weatherDataTextBlock.Text = "Cancelling...";
+                worker.CancelAsync();
+            }
         }
 
         public class PersonalInfo

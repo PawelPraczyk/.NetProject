@@ -57,6 +57,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="WeatherConnection.cs" />
+    <Compile Include="WeatherDataEntry.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -71,6 +73,8 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ParseWeather_LINQ.cs" />
+    <Compile Include="ParseWeather_XmlReader.cs" />
     <Compile Include="Person.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
