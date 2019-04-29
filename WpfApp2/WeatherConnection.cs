@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WpfApp2
+namespace Lab01
 {
     class WeatherConnection
     {

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace WpfApp2
+namespace Lab01
 {
     class ParseWeather_XmlReader
     {

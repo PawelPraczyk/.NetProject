@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Data.Entity;
 
 namespace Lab01
 {
-    public struct WeatherDataEntry
+    public class MyDbContext : DbContext
     {
-        public string City { set; get; }
-        public float Temperature { set; get; }
+        public MyDbContext()
+        {
+        }
     }
 }

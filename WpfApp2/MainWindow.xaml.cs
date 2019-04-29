@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -20,7 +21,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using WpfApp2;
+using Lab01;
 
 namespace Lab01
 {
@@ -42,6 +43,9 @@ namespace Lab01
         }
 
         public object ProgresChanged { get; private set; }
+        Lab01.Entity_Data_Modells.WeatherEntities db = new Lab01.Entity_Data_Modells.WeatherEntities();
+        System.Windows.Data.CollectionViewSource weatherEntryViewSource;
+        System.Windows.Data.CollectionViewSource weatherEntitiesViewSource;
 
         public MainWindow()
         {
@@ -52,6 +56,23 @@ namespace Lab01
             worker.WorkerSupportsCancellation = true;
             worker.DoWork += Worker_DoWork;
             worker.ProgressChanged += Worker_ProgressChanged;
+
+            weatherEntryViewSource =
+               ((System.Windows.Data.CollectionViewSource)(this.FindResource("weatherEntryViewSource")));
+            weatherEntitiesViewSource =
+                ((System.Windows.Data.CollectionViewSource)(this.FindResource("weatherEntitiesViewSource")));
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            db.WeatherEntries.Local.Concat(db.WeatherEntries.ToList());
+            weatherEntryViewSource.Source = db.WeatherEntries.Local;
+            weatherEntitiesViewSource.Source = db.WeatherEntries.Local;
+            System.Windows.Data.CollectionViewSource personViewSource = ((System.Windows.Data.CollectionViewSource)(this.FindResource("personViewSource")));
+            // Load data by setting the CollectionViewSource.Source property:
+            // personViewSource.Source = [generic data source]
+            // Load data by setting the CollectionViewSource.Source property:
+            // productViewSource.Source = [generic data source]
         }
 
         public void AddPerson(Person person)
@@ -236,11 +257,28 @@ namespace Lab01
             using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(responseXML)))
             {
                 result = ParseWeather_LINQ.Parse(stream);
-                Items.Add(new Person()
+                Person person = new Person()
                 {
                     Name = result.City,
                     Age = (int)Math.Round(result.Temperature)
-                });
+                };
+                Items.Add(person);
+                var newEntry = new Lab01.Entity_Data_Modells.WeatherEntry()
+                {
+                    Id = int.Parse(idTextBox.Text),
+                    City = cityTextBox.Text,
+                    Temperature = person.Age
+                };
+                db.WeatherEntries.Local.Add(newEntry);
+                try
+                {
+                    db.SaveChanges();
+                }
+                catch (Exception ex)
+                {
+                    db.WeatherEntries.Local.Remove(newEntry);
+                    Debug.WriteLine("Error, id is not unique!");
+                }
             }
         }
 
