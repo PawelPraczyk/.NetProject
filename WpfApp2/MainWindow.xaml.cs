@@ -48,7 +48,7 @@ namespace Lab01
         {
             get => people;
         }
-
+        
         public object ProgresChanged { get; private set; }
         Lab01.Entity_Data_Modells.WeatherEntities db = new Lab01.Entity_Data_Modells.WeatherEntities();
         System.Windows.Data.CollectionViewSource weatherEntryViewSource;
@@ -56,7 +56,7 @@ namespace Lab01
 
         public MainWindow()
         {
-
+            
             InitializeComponent();
 
             worker.WorkerReportsProgress = true;
@@ -108,6 +108,8 @@ namespace Lab01
             {
                 throw new FormatException("Age have to be a number");
             }
+            
+            
         }
 
         private void AddPictureButton_Click(object sender, RoutedEventArgs e)
@@ -170,9 +172,18 @@ namespace Lab01
                         {
                             var stringContent = await content.ReadAsStringAsync();
                             personal = JsonConvert.DeserializeObject<PersonalInfo>(stringContent);
-                            
-                                                        
-                            people.Add(new Person { Age = personal.age, Name = personal.name, Filename = personal.photo });
+                            try
+                            {
+                                people.Add(new Person { Age = personal.age, Name = personal.name, Filename = personal.photo });
+                            }
+                            catch (FormatException)
+                            {
+                                throw new FormatException("Age have to be a number");
+                            }
+                            catch(Exception)
+                            {
+                                throw new Exception("Can't load data from internet");
+                            }
                         }
                     }
                 }
@@ -207,12 +218,20 @@ namespace Lab01
 
             using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(responseXML)))
             {
+                Person newOne = new Person();
                 result = ParseWeather_LINQ.Parse(stream);
-                Items.Add(new Person()
+                try
                 {
-                    Name = result.City,
-                    Age = (int)Math.Round(result.Temperature)
-                });
+                    newOne.Name = result.City;
+                    newOne.Age = (int)Math.Round(result.Temperature);
+
+                    Items.Add(newOne);
+                }
+                catch (Exception)
+                {
+                    throw new Exception("Can't load informations about weather.");
+                }
+            
             }
 
             if (worker.IsBusy != true)
@@ -246,12 +265,18 @@ namespace Lab01
                     using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(responseXML)))
                     {
                         result = ParseWeather_XmlReader.Parse(stream);
-                        AddPerson(
-                            new Person()
-                            {
-                                Name = result.City,
-                                Age = (int)Math.Round(result.Temperature)
-                            });
+                        Person newOne = new Person();
+                        try
+                        {
+                            newOne.Name = result.City;
+                            newOne.Age = (int)Math.Round(result.Temperature);
+
+                            AddPerson(newOne);
+                        }
+                        catch (Exception)
+                        {
+                            throw new Exception("Can't load informations about weather.");
+                        }
                     }
                     Thread.Sleep(2000);
                 }
@@ -280,27 +305,45 @@ namespace Lab01
             using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(responseXML)))
             {
                 result = ParseWeather_LINQ.Parse(stream);
-                Person person = new Person()
-                {
-                    Name = result.City,
-                    Age = (int)Math.Round(result.Temperature)
-                };
-                Items.Add(person);
-                var newEntry = new Lab01.Entity_Data_Modells.WeatherEntry()
-                {
-                    Id = int.Parse(idTextBox.Text),
-                    City = cityTextBox.Text,
-                    Temperature = person.Age
-                };
-                db.WeatherEntries.Local.Add(newEntry);
+                Person newOne = new Person();
+                var newEntry = new Lab01.Entity_Data_Modells.WeatherEntry();
+
                 try
                 {
+                    newOne.Name = result.City;
+                    newOne.Age = (int)Math.Round(result.Temperature);
+
+                    Items.Add(newOne);
+                }
+                catch (Exception)
+                {
+                    throw new Exception("Can't load informations about weather.");
+                }
+
+                try
+                {
+
+                    newEntry.Id = int.Parse(idTextBox.Text);
+                    newEntry.City = cityTextBox.Text;
+                    newEntry.Temperature = newOne.Age;
+
+                    db.WeatherEntries.Local.Add(newEntry);
+                }
+                catch (FormatException)
+                {
+                    throw new FormatException("Id have to be a number");
+                }
+                try
+                {
+
+                    if (db.WeatherEntries.Any(g => g.Id == newEntry.Id))
+                        throw new Exception();
                     db.SaveChanges();
                 }
                 catch (Exception ex)
                 {
                     db.WeatherEntries.Local.Remove(newEntry);
-                    Debug.WriteLine("Error, id is not unique!");
+                    throw new Exception("Error, id is not unique!");
                 }
             }
         }
