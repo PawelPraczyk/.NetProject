@@ -5,8 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Lab01"
         xmlns:Entity_Data_Modells="clr-namespace:Lab01.Entity_Data_Modells" x:Class="Lab01.MainWindow"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" Loaded="Window_Loaded">
+        xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
+        mc:Ignorable="d" d:DataContext="{d:DesignInstance local:MainWindow}"
+        Title="MainWindow" Height="535.5" Width="1082" Loaded="Window_Loaded">
     <Window.Resources>
         <CollectionViewSource x:Key="weatherEntryViewSource" d:DesignSource="{d:DesignInstance {x:Type Entity_Data_Modells:WeatherEntry}, CreateList=True}"/>
         <CollectionViewSource x:Key="weatherEntitiesViewSource" d:DesignSource="{d:DesignInstance {x:Type Entity_Data_Modells:WeatherEntities}, CreateList=True}"/>
@@ -22,9 +23,6 @@
                 <Setter Property="Margin" Value="2" />
             </Style>
         </Grid.Resources>
-        <!--<Grid.DataContext>
-            <StaticResource ResourceKey="weatherEntitiesWeatherEntriesViewSource"/>
-        </Grid.DataContext>-->
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="30*"/>
             <ColumnDefinition/>
@@ -60,6 +58,7 @@
             <ProgressBar x:Name="weatherDataProgressBar" Height="20"/>
             <TextBlock x:Name="weatherDataTextBlock" />
             <Button Content="CANCEL" Click="Button_Click_1"/>
+            <Button Content="Draw graph" Click="DrawGraphButton_Click"/>
         </StackPanel>
         <Grid x:Name="grid1" VerticalAlignment="Top" Margin="10,20,0,0" HorizontalAlignment="Left" Grid.Column="4" Width="235">
             <Grid.RowDefinitions>
@@ -87,5 +86,14 @@
             </DataGrid.Columns>
         </DataGrid>
         <Image Name="myImage" HorizontalAlignment="Left" Height="120" Margin="102.8,262,0,0" VerticalAlignment="Top" Width="157" RenderTransformOrigin="1.025,0.471" Grid.Column="3"/>
+        <lvc:CartesianChart Series="{Binding SeriesCollection}" LegendLocation="Left" Margin="26,238,24,5">
+            <lvc:CartesianChart.AxisX>
+                <lvc:Axis Title="Salesman" Labels="{Binding Labels}"></lvc:Axis>
+            </lvc:CartesianChart.AxisX>
+            <lvc:CartesianChart.AxisY>
+                <lvc:Axis Title="Sold Apps" LabelFormatter="{Binding Formatter}"></lvc:Axis>
+            </lvc:CartesianChart.AxisY>
+        </lvc:CartesianChart>
     </Grid>
+
 </Window>

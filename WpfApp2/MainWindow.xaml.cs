@@ -22,6 +22,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using Lab01;
+using LiveCharts;
+using LiveCharts.Wpf;
 
 namespace Lab01
 {
@@ -34,7 +36,12 @@ namespace Lab01
         BackgroundWorker worker = new BackgroundWorker();
 
         string filename;
-        ObservableCollection<Person> people = new ObservableCollection<Person>();
+        ObservableCollection<Person> people = new ObservableCollection<Person>()
+        {
+            new Person { Name = "Warsaw", Age = 290 },
+            new Person { Name = "Paris", Age = 291 },
+            new Person { Name = "London", Age = 288 }
+        };
 
 
         public ObservableCollection<Person> Items
@@ -49,8 +56,8 @@ namespace Lab01
 
         public MainWindow()
         {
+
             InitializeComponent();
-            DataContext = this;
 
             worker.WorkerReportsProgress = true;
             worker.WorkerSupportsCancellation = true;
@@ -61,7 +68,22 @@ namespace Lab01
                ((System.Windows.Data.CollectionViewSource)(this.FindResource("weatherEntryViewSource")));
             weatherEntitiesViewSource =
                 ((System.Windows.Data.CollectionViewSource)(this.FindResource("weatherEntitiesViewSource")));
+
+            SeriesCollection = new SeriesCollection
+            {
+                new ColumnSeries
+                {
+                    Title = "Temperature",
+                    Values = new ChartValues<int> { people.Where(c => c.Name == "Warsaw").Select(c => c.Age).Last()-273, people.Where(c => c.Name == "Paris").Select(c => c.Age).Last() - 273, people.Where(c => c.Name == "London").Select(c => c.Age).Last() - 273 }
+                }
+            };
+
+            Labels = new[] { "Warsaw", "Paris", "London" };
+            Formatter = value => value.ToString("N");
+            DataContext = this;
         }
+
+
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -69,10 +91,6 @@ namespace Lab01
             weatherEntryViewSource.Source = db.WeatherEntries.Local;
             weatherEntitiesViewSource.Source = db.WeatherEntries.Local;
             System.Windows.Data.CollectionViewSource personViewSource = ((System.Windows.Data.CollectionViewSource)(this.FindResource("personViewSource")));
-            // Load data by setting the CollectionViewSource.Source property:
-            // personViewSource.Source = [generic data source]
-            // Load data by setting the CollectionViewSource.Source property:
-            // productViewSource.Source = [generic data source]
         }
 
         public void AddPerson(Person person)
@@ -82,7 +100,6 @@ namespace Lab01
 
         private void AddNewPersonButton_Click(object sender, RoutedEventArgs e)
         {
-
             try
             {
                 people.Add(new Person { Age = int.Parse(ageTextBox.Text), Name = nameTextBox.Text, Filename = filename });
@@ -91,8 +108,6 @@ namespace Lab01
             {
                 throw new FormatException("Age have to be a number");
             }
-
-
         }
 
         private void AddPictureButton_Click(object sender, RoutedEventArgs e)
@@ -104,9 +119,6 @@ namespace Lab01
             {
                 filename = fileDialog.FileName;
             }
-
-
-
         }
 
         private void ListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -168,7 +180,6 @@ namespace Lab01
             }
 
             return personal;
-
         }
 
         private void ReportProgress(object sender, int e)
@@ -191,7 +202,7 @@ namespace Lab01
 
         private async void LoadWeatherData(object sender, RoutedEventArgs e)
         {
-            string responseXML = await WeatherConnection.LoadDataAsync("London");
+            string responseXML = await WeatherConnection.LoadData("London");
             WeatherDataEntry result;
 
             using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(responseXML)))
@@ -229,7 +240,7 @@ namespace Lab01
                     worker.ReportProgress(
                         (int)Math.Round((float)i * 100.0 / (float)cities.Count),
                         "Loading " + city + "...");
-                    string responseXML = WeatherConnection.LoadDataAsync(city).Result;
+                    string responseXML = WeatherConnection.LoadData(city).Result;
                     WeatherDataEntry result;
 
                     using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(responseXML)))
@@ -247,11 +258,23 @@ namespace Lab01
             }
             worker.ReportProgress(100, "Done");
         }
-
+        private void DrawGraphButton_Click(object sender, RoutedEventArgs e)
+        {
+            SeriesCollection.Add(new ColumnSeries
+            {
+                Title = "Temperature",
+                Values = new ChartValues<int> { people.Where(c => c.Name == "Warsaw").Select(c => c.Age).Last() - 273, people.Where(c => c.Name == "Paris").Select(c => c.Age).Last() - 273, people.Where(c => c.Name == "London").Select(c => c.Age).Last() - 273 }
+            });
+            Labels = new[] { "Warsaw", "Paris", "London" };
+            Formatter = value => value.ToString("N");
+        }
+        public SeriesCollection SeriesCollection { get; set; }
+        public string[] Labels { get; set; }
+        public Func<double, string> Formatter { get; set; }
         private async void LoadCityTemp_Click(object sender, RoutedEventArgs e)
         {
             string city = cityTextBox.Text;
-            string responseXML = await WeatherConnection.LoadDataAsync(city);
+            string responseXML = await WeatherConnection.LoadData(city);
             WeatherDataEntry result;
 
             using (MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(responseXML)))
@@ -291,12 +314,13 @@ namespace Lab01
             }
         }
 
+
+
         public class PersonalInfo
         {
             public string name { get; set; }
             public int age { get; set; }
             public string photo { get; set; }
-
         }
 
 

@@ -12,7 +12,7 @@ namespace Lab01
         static string apiKey = "1b6714e500f0cdd864a8b49ec6ac5e45";
         static string apiBaseUrl = "https://api.openweathermap.org/data/2.5/weather";
 
-        public static async Task<string> LoadDataAsync(string cityName)
+        public static async Task<string> LoadData(string cityName)
         {
             string apiCall = apiBaseUrl + "?q=" + cityName + "&apikey=" + apiKey + "&mode=xml";
             Task<string> result;
